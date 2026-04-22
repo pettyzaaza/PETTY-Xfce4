@@ -17,7 +17,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 echo "[1/10] Checking for missing dependencies..."
 
 # List of official packages
-PKGS="xfce4 xfce4-goodies xfce4-whiskermenu-plugin pavucontrol zsh git noto-fonts noto-fonts-cjk noto-fonts-emoji ttf-dejavu ttf-liberation ttf-freefont pipewire pipewire-alsa pipewire-pulse wireplumber kitty fastfetch"
+PKGS="xfce4 xfce4-goodies xfce4-whiskermenu-plugin pavucontrol zsh git noto-fonts noto-fonts-cjk noto-fonts-emoji ttf-dejavu ttf-liberation ttf-freefont pipewire pipewire-alsa pipewire-pulse wireplumber kitty fastfetch vulkan-icd-loader lib32-vulkan-icd-loader"
 # List of AUR packages
 AUR_PKGS="ttf-bigblue-terminal"
 
@@ -29,6 +29,57 @@ install_packages() {
     else
         echo "Pacman not found. Please ensure dependencies are installed manually."
     fi
+}
+
+setup_vulkan_drivers() {
+    echo "[1.5/10] Detecting GPU and setting up Vulkan drivers..."
+    
+    local HAS_NVIDIA=false
+    local HAS_AMD=false
+    
+    if lspci | grep -iq "nvidia"; then HAS_NVIDIA=true; fi
+    if lspci | grep -iqE "vga|3d" | grep -iq "amd"; then HAS_AMD=true; fi
+    
+    echo "Detected Hardware:"
+    [ "$HAS_NVIDIA" = true ] && echo " - NVIDIA GPU detected"
+    [ "$HAS_AMD" = true ] && echo " - AMD GPU detected"
+    
+    echo ""
+    echo "Which drivers would you like to install?"
+    echo "1) NVIDIA (Proprietary/Open)"
+    echo "2) AMD (Vulkan Radeon)"
+    echo "3) Both (Hybrid/Multi-GPU)"
+    echo "4) Skip"
+    
+    local choice=""
+    if [ "$HAS_NVIDIA" = true ] && [ "$HAS_AMD" = true ]; then
+        choice="3"
+        echo "Suggested: 3 (Both detected)"
+    elif [ "$HAS_NVIDIA" = true ]; then
+        choice="1"
+        echo "Suggested: 1 (NVIDIA detected)"
+    elif [ "$HAS_AMD" = true ]; then
+        choice="2"
+        echo "Suggested: 2 (AMD detected)"
+    fi
+    
+    read -p "Enter choice [1-4] (Default: $choice): " user_choice
+    user_choice=${user_choice:-$choice}
+    
+    case $user_choice in
+        1)
+            sudo pacman -S --needed --noconfirm nvidia-open lib32-nvidia-utils nvidia-prime
+            ;;
+        2)
+            sudo pacman -S --needed --noconfirm vulkan-radeon lib32-vulkan-radeon
+            ;;
+        3)
+            sudo pacman -S --needed --noconfirm nvidia-open lib32-nvidia-utils nvidia-prime vulkan-radeon lib32-vulkan-radeon
+            ;;
+        *)
+            echo "Skipping driver installation."
+            ;;
+    esac
 }
 
 install_aur_packages() {
@@ -58,6 +109,7 @@ install_aur_packages() {
 }
 
 install_packages
+setup_vulkan_drivers
 install_aur_packages
 
 # 2. Create directories
