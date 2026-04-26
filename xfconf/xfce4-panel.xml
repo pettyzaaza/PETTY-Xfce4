@@ -38,37 +38,20 @@
         <value type="double" value="1"/>
       </property>
     </property>
-    <property name="panel-2" type="empty">
-      <property name="autohide-behavior" type="uint" value="1"/>
-      <property name="position" type="string" value="p=10;x=0;y=0"/>
-      <property name="length" type="uint" value="1"/>
-      <property name="position-locked" type="bool" value="true"/>
-      <property name="size" type="uint" value="48"/>
-      <property name="plugin-ids" type="array">
-        <value type="int" value="11"/>
-        <value type="int" value="12"/>
-        <value type="int" value="13"/>
-        <value type="int" value="14"/>
-        <value type="int" value="15"/>
-        <value type="int" value="16"/>
-        <value type="int" value="17"/>
-        <value type="int" value="18"/>
-      </property>
-    </property>
   </property>
   <property name="plugins" type="empty">
     <property name="plugin-1" type="string" value="whiskermenu">
       <property name="recent" type="array">
+        <value type="string" value="btop.desktop"/>
         <value type="string" value="vesktop.desktop"/>
-        <value type="string" value="xfce-backdrop-settings.desktop"/>
-        <value type="string" value="xfce-wm-settings.desktop"/>
-        <value type="string" value="xfce-ui-settings.desktop"/>
-        <value type="string" value="xfce-keyboard-settings.desktop"/>
-        <value type="string" value="xfce-display-settings.desktop"/>
-        <value type="string" value="xfce4-mime-settings.desktop"/>
         <value type="string" value="brave-browser.desktop"/>
+        <value type="string" value="steam.desktop"/>
+        <value type="string" value="xfce4-power-manager-settings.desktop"/>
+        <value type="string" value="xfce4-taskmanager.desktop"/>
+        <value type="string" value="htop.desktop"/>
+        <value type="string" value="kitty.desktop"/>
+        <value type="string" value="xfce4-mime-settings.desktop"/>
         <value type="string" value="org.pulseaudio.pavucontrol.desktop"/>
-        <value type="string" value="xfce-workspaces-settings.desktop"/>
       </property>
       <property name="favorites" type="array">
         <value type="string" value="xfce4-web-browser.desktop"/>
@@ -89,6 +72,7 @@
     <property name="plugin-6" type="string" value="systray">
       <property name="square-icons" type="bool" value="true"/>
       <property name="known-legacy-items" type="array">
+        <value type="string" value="notes"/>
         <value type="string" value="solaar"/>
       </property>
       <property name="known-items" type="array">
@@ -106,7 +90,6 @@
       <property name="style" type="uint" value="0"/>
     </property>
     <property name="plugin-10" type="string" value="actions"/>
-    <property name="plugin-11" type="string" value="showdesktop"/>
     <property name="plugin-12" type="string" value="separator"/>
     <property name="plugin-13" type="string" value="launcher">
       <property name="items" type="array">
@@ -133,5 +116,10 @@
       <property name="base-directory" type="string" value="/home/@USERNAME@"/>
     </property>
     <property name="plugin-4" type="string" value="showdesktop"/>
+    <property name="notes" type="empty">
+      <property name="global" type="empty">
+        <property name="version" type="string" value="1.12.0"/>
+      </property>
+    </property>
   </property>
 </channel>
