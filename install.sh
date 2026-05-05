@@ -126,9 +126,9 @@ cp -rv "$SCRIPT_DIR"/fonts/* ~/.local/share/fonts/
 cp -v "$SCRIPT_DIR"/wallpapers/* ~/Pictures/Wallpapers/
 [ -d "$SCRIPT_DIR"/autostart ] && cp -rv "$SCRIPT_DIR"/autostart/* ~/.config/autostart/
 
-# Deploy System-level Optimizations (I/O & GPU)
+# Deploy System-level Optimizations (I/O, Network & GPU)
 echo "Deploying system optimizations..."
-[ -f "$SCRIPT_DIR"/etc/sysctl.d/99-io-responsiveness.conf ] && sudo cp -v "$SCRIPT_DIR"/etc/sysctl.d/99-io-responsiveness.conf /etc/sysctl.d/
+[ -d "$SCRIPT_DIR"/etc/sysctl.d ] && sudo cp -v "$SCRIPT_DIR"/etc/sysctl.d/*.conf /etc/sysctl.d/
 [ -f "$SCRIPT_DIR"/etc/udev/rules.d/60-ioschedulers.rules ] && sudo cp -v "$SCRIPT_DIR"/etc/udev/rules.d/60-ioschedulers.rules /etc/udev/rules.d/
 
 # CPU Performance Optimization (Performance Governor & EPP)
