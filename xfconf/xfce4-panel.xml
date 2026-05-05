@@ -26,7 +26,7 @@
       <property name="mode" type="uint" value="0"/>
       <property name="background-style" type="uint" value="1"/>
       <property name="length-adjust" type="bool" value="true"/>
-      <property name="autohide-behavior" type="uint" value="0"/>
+      <property name="autohide-behavior" type="uint" value="2"/>
       <property name="enable-struts" type="bool" value="true"/>
       <property name="nrows" type="uint" value="1"/>
       <property name="border-width" type="uint" value="0"/>
@@ -42,16 +42,16 @@
   <property name="plugins" type="empty">
     <property name="plugin-1" type="string" value="whiskermenu">
       <property name="recent" type="array">
-        <value type="string" value="btop.desktop"/>
-        <value type="string" value="vesktop.desktop"/>
-        <value type="string" value="brave-browser.desktop"/>
-        <value type="string" value="steam.desktop"/>
-        <value type="string" value="xfce4-power-manager-settings.desktop"/>
-        <value type="string" value="xfce4-taskmanager.desktop"/>
-        <value type="string" value="htop.desktop"/>
-        <value type="string" value="kitty.desktop"/>
+        <value type="string" value="panel-preferences.desktop"/>
         <value type="string" value="xfce4-mime-settings.desktop"/>
+        <value type="string" value="steam.desktop"/>
+        <value type="string" value="org.xfce.Parole.desktop"/>
+        <value type="string" value="vesktop.desktop"/>
+        <value type="string" value="xfce4-taskmanager.desktop"/>
+        <value type="string" value="btop.desktop"/>
+        <value type="string" value="nvidia-settings.desktop"/>
         <value type="string" value="org.pulseaudio.pavucontrol.desktop"/>
+        <value type="string" value="xfce-session-settings.desktop"/>
       </property>
       <property name="favorites" type="array">
         <value type="string" value="xfce4-web-browser.desktop"/>

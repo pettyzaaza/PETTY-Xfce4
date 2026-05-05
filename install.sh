@@ -126,12 +126,16 @@ cp -rv "$SCRIPT_DIR"/fonts/* ~/.local/share/fonts/
 cp -v "$SCRIPT_DIR"/wallpapers/* ~/Pictures/Wallpapers/
 [ -d "$SCRIPT_DIR"/autostart ] && cp -rv "$SCRIPT_DIR"/autostart/* ~/.config/autostart/
 
-# System-level Optimizations (I/O & GPU)
-log RUN "Deploying system optimizations..."
+# Deploy System-level Optimizations (I/O & GPU)
+echo "Deploying system optimizations..."
 [ -f "$SCRIPT_DIR"/etc/sysctl.d/99-io-responsiveness.conf ] && sudo cp -v "$SCRIPT_DIR"/etc/sysctl.d/99-io-responsiveness.conf /etc/sysctl.d/
 [ -f "$SCRIPT_DIR"/etc/udev/rules.d/60-ioschedulers.rules ] && sudo cp -v "$SCRIPT_DIR"/etc/udev/rules.d/60-ioschedulers.rules /etc/udev/rules.d/
 
-# Smart GPU Detection
+# CPU Performance Optimization (Performance Governor & EPP)
+log RUN "Optimizing CPU for high-performance gaming..."
+[ -f "$SCRIPT_DIR"/etc/tmpfiles.d/cpu-performance.conf ] && sudo cp -v "$SCRIPT_DIR"/etc/tmpfiles.d/cpu-performance.conf /etc/tmpfiles.d/
+
+# Smart GPU Detection for Performance Fixes
 if lspci | grep -qi "NVIDIA"; then
     log SUCCESS "NVIDIA GPU detected. Applying specialized fixes..."
     if [ -f "$SCRIPT_DIR"/etc/systemd/system/nvidia-persistence.service ]; then
@@ -150,7 +154,7 @@ sudo udevadm control --reload-rules && sudo udevadm trigger
 log RUN "Localizing configuration for user '$NEW_USER'..."
 find ~/.config/xfce4/xfconf/xfce-perchannel-xml/ -type f -name "*.xml" -exec sed -i "s/$PLACEHOLDER/$NEW_USER/g" {} +
 
-log INFO "Setting up Thai font preferences (Sarabun)..."
+log INFO "Setting up font preferences (BigBlue + Sarabun)..."
 mkdir -p ~/.config/fontconfig
 cat > ~/.config/fontconfig/fonts.conf <<FOF
 <?xml version="1.1"?>
@@ -166,7 +170,10 @@ cat > ~/.config/fontconfig/fonts.conf <<FOF
   </alias>
   <alias>
     <family>monospace</family>
-    <prefer><family>Sarabun</family></prefer>
+    <prefer>
+      <family>BigBlueTerm437 Nerd Font Mono</family>
+      <family>Sarabun</family>
+    </prefer>
   </alias>
   <match target="pattern">
     <test name="lang" compare="contains">
@@ -199,6 +206,15 @@ if command -v xfce4-mime-helper &> /dev/null; then
     log INFO "Setting Kitty as preferred terminal..."
     xfce4-mime-helper --apply TerminalEmulator kitty
 fi
+
+# Configure Kitty terminal font
+log INFO "Configuring Kitty terminal font..."
+mkdir -p ~/.config/kitty
+cat > ~/.config/kitty/kitty.conf <<KCF
+font_family      BigBlueTerm437 Nerd Font Mono
+font_size        12.0
+background_opacity 0.9
+KCF
 
 log INFO "Setting Viewnior and MPV as default multimedia viewers..."
 xdg-mime default viewnior.desktop image/jpeg image/png image/gif image/bmp image/webp
