@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Exec=nvidia-settings -a "[gpu:0]/GPUPowerMizerMode=1"
+Hidden=false
+NoDisplay=false
+X-GNOME-Autostart-enabled=true
+Name=NVIDIA Max Performance
+Comment=Sets NVIDIA GPU to Prefer Maximum Performance
