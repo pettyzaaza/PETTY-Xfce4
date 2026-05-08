@@ -1,91 +1,66 @@
 #!/bin/bash
 
-# Nashville96 XFCE Configuration Updater
-# This script fetches the latest changes from GitHub and re-applies the configuration.
+# Nashville96 Updater
+# Pulls latest changes and re-applies config
 
 set -e
-
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
-echo "--------------------------------------------------"
-echo " Nashville96 XFCE configuration update "
-echo "--------------------------------------------------"
+echo "--- Nashville96 Update ---"
 
-# 1. Pull latest changes from Git
+# 1. pull
 if [ -d "$SCRIPT_DIR/.git" ]; then
-    echo "[1/4] Fetching latest changes from GitHub..."
-    
-    # Check for uncommitted changes
+    echo "[1/4] Fetching..."
     if ! git -C "$SCRIPT_DIR" diff-index --quiet HEAD --; then
-        echo "Warning: You have uncommitted changes in $SCRIPT_DIR."
-        echo "Stashing changes before pulling..."
+        echo "Stashing local changes..."
         git -C "$SCRIPT_DIR" stash
         STASHED=true
     fi
-    
     git -C "$SCRIPT_DIR" pull
-    
-    if [ "$STASHED" = true ]; then
-        echo "Re-applying stashed changes..."
-        git -C "$SCRIPT_DIR" stash pop || echo "Conflict detected while popping stash. Please resolve manually."
-    fi
+    [ "$STASHED" = true ] && git -C "$SCRIPT_DIR" stash pop
 else
-    echo "[1/4] Not a git repository. Skipping fetch."
+    echo "[1/4] Not a git repo, skipping fetch."
 fi
 
-# 2. Re-apply configuration assets
-echo "[2/4] Re-applying configuration assets..."
-
+# 2. sync
+echo "[2/4] Syncing assets..."
 NEW_USER=$(whoami)
 PLACEHOLDER="@USERNAME@"
 
-# Ensure directories exist
-mkdir -p ~/.config/xfce4/xfconf/xfce-perchannel-xml/
-mkdir -p ~/.config/xfce4/panel/
-mkdir -p ~/.config/fastfetch/
-mkdir -p ~/.config/kitty/
-mkdir -p ~/.themes/
-mkdir -p ~/.local/share/icons/
-mkdir -p ~/.local/share/fonts/
-mkdir -p ~/Pictures/Wallpapers/
+mkdir -p ~/.config/xfce4/xfconf/xfce-perchannel-xml/ ~/.config/xfce4/panel/ ~/.config/fastfetch/ ~/.config/kitty/ ~/.themes/ ~/.local/share/icons/ ~/.local/share/fonts/ ~/Pictures/Wallpapers/
 
-# Sync files (excluding keyboard shortcuts to preserve user customizations)
 for file in "$SCRIPT_DIR"/xfconf/*.xml; do
-    filename=$(basename "$file")
-    if [ "$filename" != "xfce4-keyboard-shortcuts.xml" ]; then
-        cp -v "$file" ~/.config/xfce4/xfconf/xfce-perchannel-xml/
-    else
-        echo "Skipping $filename to preserve your custom shortcut keys."
-    fi
+    [ "$(basename "$file")" != "xfce4-keyboard-shortcuts.xml" ] && cp -v "$file" ~/.config/xfce4/xfconf/xfce-perchannel-xml/
 done
+
 cp -rv "$SCRIPT_DIR"/panel/* ~/.config/xfce4/panel/
 cp -v "$SCRIPT_DIR"/fastfetch/config.jsonc ~/.config/fastfetch/
 [ -f "$SCRIPT_DIR"/kitty/kitty.conf ] && cp -v "$SCRIPT_DIR"/kitty/kitty.conf ~/.config/kitty/
+mkdir -p ~/.config/nvim
+cp -rv "$SCRIPT_DIR"/nvim/* ~/.config/nvim/
 cp -rv "$SCRIPT_DIR"/themes/* ~/.themes/
 cp -rv "$SCRIPT_DIR"/icons/* ~/.local/share/icons/
 cp -rv "$SCRIPT_DIR"/fonts/* ~/.local/share/fonts/
 cp -v "$SCRIPT_DIR"/wallpapers/* ~/Pictures/Wallpapers/
 
-# Localize configuration for the current user
-echo "Localizing configuration for user '$NEW_USER'..."
+# localise
+echo "Localizing for $NEW_USER..."
 find ~/.config/xfce4/xfconf/xfce-perchannel-xml/ -type f -name "*.xml" -exec sed -i "s/$PLACEHOLDER/$NEW_USER/g" {} +
 
-# Re-apply Zsh configuration
+# shell
 cp -v "$SCRIPT_DIR"/zsh/.zshrc ~/.zshrc
 cp -v "$SCRIPT_DIR"/zsh/.p10k.zsh ~/.p10k.zsh
 
-# 3. Ensure theme settings are applied
-echo "[3/4] Ensuring themes are applied..."
+# 3. themes
+echo "[3/4] Theme settings..."
 xfconf-query -c xsettings -p /Net/ThemeName -s "custom" || true
 xfconf-query -c xsettings -p /Net/IconThemeName -s "SE98" || true
 xfconf-query -c xfwm4 -p /general/theme -s "custom_WM" || true
 
-# 4. Reload services
-echo "[4/4] Reloading configuration services..."
+# 4. reload
+echo "[4/4] Reloading..."
 pkill xfconfd || true
 fc-cache -fv
 (xfce4-panel --restart &>/dev/null &)
 
-echo "--------------------------------------------------"
-echo " Update successful! "
-echo "--------------------------------------------------"
+echo "--- Update Success ---"
