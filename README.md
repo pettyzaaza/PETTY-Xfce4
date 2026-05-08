@@ -25,3 +25,4 @@ A complete, portable XFCE desktop environment configuration backup...
 This configuration is designed to be portable. The installer automatically detects your username and updates all Xfconf XML files and shell paths accordingly using the `@USERNAME@` placeholder.
 
 
+# PETTY-Xfce4
