@@ -5,7 +5,7 @@
     <property name="font" type="string" value="Sans Bold 20"/>
   </property>
   <property name="folders" type="empty">
-    <property name="last-used-media" type="string" value="/home/pettyzaaza/.local/share/Steam/steamapps/workshop/content/394360/2937055871"/>
+    <property name="last-used-media" type="string" value="/home/@USERNAME@/.local/share/Steam/steamapps/workshop/content/394360/2937055871"/>
   </property>
   <property name="window" type="empty">
     <property name="maximized" type="bool" value="false"/>
