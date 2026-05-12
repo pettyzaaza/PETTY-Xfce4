@@ -74,7 +74,11 @@ install_packages() {
     local OPT_PKGS="vulkan-icd-loader lib32-vulkan-icd-loader linux-headers ananicy-cpp tlp xfce4-power-manager"
 
     for group in "$CORE_PKGS" "$FONT_PKGS" "$AUDIO_PKGS" "$UTIL_PKGS" "$NET_BT_PKGS" "$OPT_PKGS"; do
-        sudo pacman -S --needed --noconfirm $group || log WARN "Some packages in group failed to install."
+        if sudo pacman -S --needed --noconfirm $group; then
+            log SUCCESS "Installed package group: $(echo $group | cut -d' ' -f1-2)..."
+        else
+            log WARN "Some packages in group failed to install."
+        fi
     done
 }
 
@@ -99,7 +103,11 @@ install_aur_packages() {
         fi
     fi
     log RUN "Installing AUR packages..."
-    $helper -S --needed --noconfirm $AUR_PKGS || log WARN "AUR package installation failed."
+    if $helper -S --needed --noconfirm $AUR_PKGS; then
+        log SUCCESS "AUR packages installed."
+    else
+        log WARN "AUR package installation failed."
+    fi
 }
 
 install_packages
@@ -109,8 +117,11 @@ install_aur_packages
 log RUN "Enabling services..."
 for service in ananicy-cpp bluetooth NetworkManager tlp; do
     if systemctl list-unit-files | grep -q "^${service}.service"; then
-        log INFO "Enabling ${service}..."
-        sudo systemctl enable --now "$service"
+        if sudo systemctl enable --now "$service"; then
+            log SUCCESS "Service ${service} enabled and started."
+        else
+            log WARN "Failed to enable service ${service}."
+        fi
     else
         log WARN "Service ${service} not found. Package might not be installed."
     fi
@@ -140,23 +151,32 @@ cp -v "$SCRIPT_DIR"/wallpapers/* ~/Pictures/Wallpapers/
 log SUCCESS "Assets deployed to home directory."
 
 # optimization
-log INFO "System optimizations..."
-[ -d "$SCRIPT_DIR"/etc/sysctl.d ] && sudo cp -v "$SCRIPT_DIR"/etc/sysctl.d/*.conf /etc/sysctl.d/
-[ -f "$SCRIPT_DIR"/etc/udev/rules.d/60-ioschedulers.rules ] && sudo cp -v "$SCRIPT_DIR"/etc/udev/rules.d/60-ioschedulers.rules /etc/udev/rules.d/
-[ -f "$SCRIPT_DIR"/etc/tmpfiles.d/cpu-performance.conf ] && sudo cp -v "$SCRIPT_DIR"/etc/tmpfiles.d/cpu-performance.conf /etc/tmpfiles.d/
+log INFO "Applying system optimizations..."
+if [ -d "$SCRIPT_DIR"/etc/sysctl.d ]; then
+    sudo cp -v "$SCRIPT_DIR"/etc/sysctl.d/*.conf /etc/sysctl.d/ && log SUCCESS "Kernel parameters (sysctl) deployed."
+fi
+
+if [ -f "$SCRIPT_DIR"/etc/udev/rules.d/60-ioschedulers.rules ]; then
+    sudo cp -v "$SCRIPT_DIR"/etc/udev/rules.d/60-ioschedulers.rules /etc/udev/rules.d/ && log SUCCESS "I/O Scheduler rules deployed."
+fi
+
+if [ -f "$SCRIPT_DIR"/etc/tmpfiles.d/cpu-performance.conf ]; then
+    sudo cp -v "$SCRIPT_DIR"/etc/tmpfiles.d/cpu-performance.conf /etc/tmpfiles.d/ && log SUCCESS "CPU performance profiles deployed."
+fi
 
 # gpu
 if lspci | grep -qi "NVIDIA"; then
-    log SUCCESS "NVIDIA detected."
+    log SUCCESS "NVIDIA GPU detected."
     if [ -f "$SCRIPT_DIR"/etc/systemd/system/nvidia-persistence.service ]; then
         sudo cp -v "$SCRIPT_DIR"/etc/systemd/system/nvidia-persistence.service /etc/systemd/system/
-        sudo systemctl enable nvidia-persistence.service
+        sudo systemctl enable --now nvidia-persistence.service && log SUCCESS "NVIDIA persistence mode enabled."
     fi
 fi
 
-sudo sysctl --system
+log RUN "Triggering system changes..."
+sudo sysctl --system > /dev/null
 sudo udevadm control --reload-rules && sudo udevadm trigger
-log SUCCESS "System optimizations and hardware triggers applied."
+log SUCCESS "System optimizations and hardware triggers live."
 
 # localization
 log RUN "Localizing for $NEW_USER..."
