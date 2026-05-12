@@ -42,8 +42,8 @@
   <property name="plugins" type="empty">
     <property name="plugin-1" type="string" value="whiskermenu">
       <property name="recent" type="array">
-        <value type="string" value="panel-preferences.desktop"/>
         <value type="string" value="xfce-keyboard-settings.desktop"/>
+        <value type="string" value="panel-preferences.desktop"/>
         <value type="string" value="curseforge.desktop"/>
         <value type="string" value="org.pulseaudio.pavucontrol.desktop"/>
         <value type="string" value="brave-browser.desktop"/>

@@ -60,6 +60,7 @@
       <property name="XF86Display" type="string" value="xfce4-display-settings --minimal"/>
       <property name="override" type="bool" value="true"/>
       <property name="Super_R" type="string" value="xfce4-popup-whiskermenu -i 1"/>
+      <property name="Super_L" type="string" value="xfce4-popup-whiskermenu -i 1"/>
     </property>
   </property>
   <property name="xfwm4" type="empty">
