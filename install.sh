@@ -23,6 +23,22 @@ NEW_USER=$(whoami)
 PLACEHOLDER="@USERNAME@"
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
+# sync from github
+if [ -d "$SCRIPT_DIR/.git" ]; then
+    log INFO "Checking for updates from GitHub..."
+    if ! git -C "$SCRIPT_DIR" diff-index --quiet HEAD --; then
+        log WARN "Local changes detected, stashing..."
+        git -C "$SCRIPT_DIR" stash
+        STASHED=true
+    fi
+    if git -C "$SCRIPT_DIR" pull; then
+        log SUCCESS "Project updated from GitHub."
+    else
+        log WARN "Failed to pull from GitHub. Continuing with local files."
+    fi
+    [ "$STASHED" = true ] && git -C "$SCRIPT_DIR" stash pop
+fi
+
 clear
 echo -e "${BLUE}================================================================${RESET}"
 echo -e "${BOLD}       PETTY-XFCE4 CONFIGURATION ORCHESTRATOR       ${RESET}"
@@ -31,17 +47,25 @@ log INFO "Initializing deployment for user: ${NEW_USER}"
 
 # deps
 log INFO "Checking dependencies..."
-PKGS="xfce4 xfce4-goodies xfce4-whiskermenu-plugin pavucontrol zsh git noto-fonts noto-fonts-cjk noto-fonts-emoji ttf-dejavu ttf-liberation ttf-freefont pipewire pipewire-alsa pipewire-pulse wireplumber kitty fastfetch vulkan-icd-loader lib32-vulkan-icd-loader linux-headers ananicy-cpp viewnior mpv yt-dlp bluez bluez-utils blueman networkmanager network-manager-applet tlp xfce4-power-manager light neovim"
+PKGS="xfce4 xfce4-goodies xfce4-whiskermenu-plugin pavucontrol zsh git noto-fonts noto-fonts-cjk noto-fonts-emoji ttf-dejavu ttf-liberation ttf-freefont pipewire pipewire-alsa pipewire-pulse wireplumber kitty fastfetch vulkan-icd-loader lib32-vulkan-icd-loader linux-headers ananicy-cpp viewnior mpv yt-dlp bluez bluez-utils blueman networkmanager network-manager-applet tlp xfce4-power-manager neovim xfce4-volumed-pulse"
 AUR_PKGS="ttf-bigblue-terminal cachyos-ananicy-rules"
 
 install_packages() {
-    if command -v pacman &> /dev/null; then
-        log RUN "Installing base packages..."
-        sudo pacman -Syu --needed --noconfirm $PKGS
-    else
-        log ERROR "Pacman not found."
-        exit 1
-    fi
+    log INFO "Synchronizing package databases..."
+    sudo pacman -Sy
+    
+    log RUN "Installing base packages (this may take a while)..."
+    # Split into logical groups for better error tracking
+    local CORE_PKGS="xfce4 xfce4-goodies xfce4-whiskermenu-plugin pavucontrol zsh git"
+    local FONT_PKGS="noto-fonts noto-fonts-cjk noto-fonts-emoji ttf-dejavu ttf-liberation ttf-freefont"
+    local AUDIO_PKGS="pipewire pipewire-alsa pipewire-pulse wireplumber xfce4-volumed-pulse"
+    local UTIL_PKGS="kitty fastfetch viewnior mpv yt-dlp neovim"
+    local NET_BT_PKGS="bluez bluez-utils blueman networkmanager network-manager-applet"
+    local OPT_PKGS="vulkan-icd-loader lib32-vulkan-icd-loader linux-headers ananicy-cpp tlp xfce4-power-manager"
+
+    for group in "$CORE_PKGS" "$FONT_PKGS" "$AUDIO_PKGS" "$UTIL_PKGS" "$NET_BT_PKGS" "$OPT_PKGS"; do
+        sudo pacman -S --needed --noconfirm $group || log WARN "Some packages in group failed to install."
+    done
 }
 
 install_aur_packages() {
@@ -60,11 +84,12 @@ install_aur_packages() {
             rm -rf /tmp/yay
             helper="yay"
         else
+            log INFO "Skipping AUR packages."
             return
         fi
     fi
     log RUN "Installing AUR packages..."
-    $helper -S --needed --noconfirm $AUR_PKGS
+    $helper -S --needed --noconfirm $AUR_PKGS || log WARN "AUR package installation failed."
 }
 
 install_packages
@@ -72,7 +97,14 @@ install_aur_packages
 
 # services
 log RUN "Enabling services..."
-sudo systemctl enable --now ananicy-cpp bluetooth NetworkManager tlp
+for service in ananicy-cpp bluetooth NetworkManager tlp; do
+    if systemctl list-unit-files | grep -q "^${service}.service"; then
+        log INFO "Enabling ${service}..."
+        sudo systemctl enable --now "$service"
+    else
+        log WARN "Service ${service} not found. Package might not be installed."
+    fi
+done
 
 # power & input
 log INFO "Configuring power & input..."
@@ -145,7 +177,8 @@ xfconf-query -c xsettings -p /Net/ThemeName -s "custom"
 xfconf-query -c xsettings -p /Net/IconThemeName -s "SE98"
 xfconf-query -c xfwm4 -p /general/theme -s "custom_WM"
 
-command -v xfce4-mime-helper &> /dev/null && xfce4-mime-helper --apply TerminalEmulator kitty
+# Set default terminal
+xfconf-query -c xfce4-mime-helper -p /TerminalEmulator -n -t string -s "kitty" || log WARN "Failed to set default terminal."
 
 # terminal
 log INFO "Terminal config..."
