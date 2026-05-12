@@ -12,9 +12,19 @@ if [[ -t 1 ]]; then
 fi
 
 # log
+declare -i SUCCESS_COUNT=0
+declare -i WARN_COUNT=0
+declare -i ERROR_COUNT=0
+
 log() {
     local level="$1" msg="$2" color=""
-    case "$level" in INFO) color="$BLUE" ;; SUCCESS) color="$GREEN" ;; WARN) color="$YELLOW" ;; ERROR) color="$RED" ;; RUN) color="$BOLD" ;; esac
+    case "$level" in 
+        INFO) color="$BLUE" ;; 
+        SUCCESS) color="$GREEN"; SUCCESS_COUNT+=1 ;; 
+        WARN) color="$YELLOW"; WARN_COUNT+=1 ;; 
+        ERROR) color="$RED"; ERROR_COUNT+=1 ;; 
+        RUN) color="$BOLD" ;; 
+    esac
     printf "%s[%s]%s %s\n" "${color}" "${level}" "${RESET}" "${msg}"
 }
 
@@ -127,6 +137,7 @@ cp -rv "$SCRIPT_DIR"/icons/* ~/.local/share/icons/
 cp -rv "$SCRIPT_DIR"/fonts/* ~/.local/share/fonts/
 cp -v "$SCRIPT_DIR"/wallpapers/* ~/Pictures/Wallpapers/
 [ -d "$SCRIPT_DIR"/autostart ] && cp -rv "$SCRIPT_DIR"/autostart/* ~/.config/autostart/
+log SUCCESS "Assets deployed to home directory."
 
 # optimization
 log INFO "System optimizations..."
@@ -145,10 +156,12 @@ fi
 
 sudo sysctl --system
 sudo udevadm control --reload-rules && sudo udevadm trigger
+log SUCCESS "System optimizations and hardware triggers applied."
 
 # localization
 log RUN "Localizing for $NEW_USER..."
 find ~/.config/xfce4/xfconf/xfce-perchannel-xml/ -type f -name "*.xml" -exec sed -i "s/$PLACEHOLDER/$NEW_USER/g" {} +
+log SUCCESS "Configuration files localized for $NEW_USER."
 
 # fonts
 log INFO "Font config..."
@@ -211,4 +224,18 @@ pkill xfconfd || true
 fc-cache -fv
 (xfce4-panel --restart &>/dev/null &)
 
-echo -e "\n${GREEN}Success!${RESET}"
+# summary
+echo -e "\n${BLUE}================================================================${RESET}"
+echo -e "${BOLD}                     ORCHESTRATION SUMMARY                      ${RESET}"
+echo -e "${BLUE}================================================================${RESET}"
+[ $SUCCESS_COUNT -gt 0 ] && echo -e "${GREEN}  SUCCESSES: $SUCCESS_COUNT${RESET}"
+[ $WARN_COUNT -gt 0 ] && echo -e "${YELLOW}  WARNINGS:  $WARN_COUNT${RESET}"
+[ $ERROR_COUNT -gt 0 ] && echo -e "${RED}  ERRORS:    $ERROR_COUNT${RESET}"
+echo -e "${BLUE}================================================================${RESET}"
+
+if [ $ERROR_COUNT -eq 0 ]; then
+    echo -e "${GREEN}${BOLD}FINISHED SUCCESSFULLY!${RESET}"
+else
+    echo -e "${YELLOW}${BOLD}FINISHED WITH $ERROR_COUNT ERRORS.${RESET}"
+fi
+
