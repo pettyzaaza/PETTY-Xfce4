@@ -4,4 +4,13 @@
   <property name="automount-devices" type="bool" value="true"/>
   <property name="automount-removable-media" type="bool" value="true"/>
   <property name="autobrowse-removable-media" type="bool" value="true"/>
+  <property name="autovolume" type="empty">
+    <property name="enabled" type="bool" value="true"/>
+  </property>
+  <property name="automount-media" type="empty">
+    <property name="enabled" type="bool" value="true"/>
+  </property>
+  <property name="automount-drives" type="empty">
+    <property name="enabled" type="bool" value="true"/>
+  </property>
 </channel>

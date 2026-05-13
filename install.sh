@@ -114,9 +114,15 @@ install_aur_packages() {
 install_packages
 install_aur_packages
 
+# permissions
+log RUN "Configuring user permissions..."
+sudo usermod -aG storage "$NEW_USER"
+sudo usermod -aG wheel "$NEW_USER"
+log SUCCESS "User added to storage and wheel groups."
+
 # services
 log RUN "Enabling services..."
-for service in ananicy-cpp bluetooth NetworkManager tlp ufw; do
+for service in ananicy-cpp bluetooth NetworkManager tlp ufw udisks2; do
     if systemctl list-unit-files | grep -q "^${service}.service"; then
         if sudo systemctl enable --now "$service"; then
             log SUCCESS "Service ${service} enabled and started."
@@ -163,6 +169,12 @@ log SUCCESS "Assets deployed to home directory."
 
 # optimization
 log INFO "Applying system optimizations..."
+
+log RUN "Configuring Thunar drive visibility..."
+# Smarter regex: finds any line with /mnt/, looks for the options column (4th column), and appends x-gvfs-show if missing
+sudo sed -i '/\/mnt\// { /x-gvfs-show/! s/\([^ \t]\+[ \t]\+[^ \t]\+[ \t]\+[^ \t]\+[ \t]\+\)\([^ \t]\+\)/\1\2,x-gvfs-show/ }' /etc/fstab
+log SUCCESS "Fstab updated for Thunar (all /mnt drives now visible in sidebar)."
+
 if [ -d "$SCRIPT_DIR"/etc/sysctl.d ]; then
     sudo cp -v "$SCRIPT_DIR"/etc/sysctl.d/*.conf /etc/sysctl.d/ && log SUCCESS "Kernel parameters (sysctl) deployed."
 fi
@@ -173,6 +185,11 @@ fi
 
 if [ -f "$SCRIPT_DIR"/etc/tmpfiles.d/cpu-performance.conf ]; then
     sudo cp -v "$SCRIPT_DIR"/etc/tmpfiles.d/cpu-performance.conf /etc/tmpfiles.d/ && log SUCCESS "CPU performance profiles deployed."
+fi
+
+if [ -d "$SCRIPT_DIR"/etc/polkit-1/rules.d ]; then
+    sudo mkdir -p /etc/polkit-1/rules.d/
+    sudo cp -v "$SCRIPT_DIR"/etc/polkit-1/rules.d/*.rules /etc/polkit-1/rules.d/ && log SUCCESS "Polkit security rules deployed."
 fi
 
 # gpu
