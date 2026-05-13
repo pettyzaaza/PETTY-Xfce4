@@ -1,0 +1,7 @@
+<?xml version="1.1" encoding="UTF-8"?>
+
+<channel name="thunar-volman" version="1.0">
+  <property name="automount-devices" type="bool" value="true"/>
+  <property name="automount-removable-media" type="bool" value="true"/>
+  <property name="autobrowse-removable-media" type="bool" value="true"/>
+</channel>

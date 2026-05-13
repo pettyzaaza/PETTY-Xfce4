@@ -57,7 +57,7 @@ log INFO "Initializing deployment for user: ${NEW_USER}"
 
 # deps
 log INFO "Checking dependencies..."
-PKGS="xfce4 xfce4-goodies xfce4-whiskermenu-plugin pavucontrol zsh git noto-fonts noto-fonts-cjk noto-fonts-emoji ttf-dejavu ttf-liberation ttf-freefont pipewire pipewire-alsa pipewire-pulse wireplumber kitty fastfetch vulkan-icd-loader lib32-vulkan-icd-loader linux-headers ananicy-cpp viewnior mpv yt-dlp bluez bluez-utils blueman networkmanager network-manager-applet tlp xfce4-power-manager neovim xfce4-volumed-pulse"
+PKGS="xfce4 xfce4-goodies xfce4-whiskermenu-plugin pavucontrol zsh git noto-fonts noto-fonts-cjk noto-fonts-emoji ttf-dejavu ttf-liberation ttf-freefont pipewire pipewire-alsa pipewire-pulse wireplumber kitty fastfetch vulkan-icd-loader lib32-vulkan-icd-loader linux-headers ananicy-cpp viewnior mpv yt-dlp bluez bluez-utils blueman networkmanager network-manager-applet tlp xfce4-power-manager neovim xfce4-volumed-pulse ufw"
 AUR_PKGS="ttf-bigblue-terminal cachyos-ananicy-rules"
 
 install_packages() {
@@ -71,9 +71,10 @@ install_packages() {
     local AUDIO_PKGS="pipewire pipewire-alsa pipewire-pulse wireplumber xfce4-volumed-pulse"
     local UTIL_PKGS="kitty fastfetch viewnior mpv yt-dlp neovim"
     local NET_BT_PKGS="bluez bluez-utils blueman networkmanager network-manager-applet"
-    local OPT_PKGS="vulkan-icd-loader lib32-vulkan-icd-loader linux-headers ananicy-cpp tlp xfce4-power-manager"
+    local VOL_PKGS="gvfs gvfs-mtp gvfs-afc udisks2 ntfs-3g dosfstools exfatprogs libmtp"
+    local OPT_PKGS="vulkan-icd-loader lib32-vulkan-icd-loader linux-headers ananicy-cpp tlp xfce4-power-manager ufw"
 
-    for group in "$CORE_PKGS" "$FONT_PKGS" "$AUDIO_PKGS" "$UTIL_PKGS" "$NET_BT_PKGS" "$OPT_PKGS"; do
+    for group in "$CORE_PKGS" "$FONT_PKGS" "$AUDIO_PKGS" "$UTIL_PKGS" "$NET_BT_PKGS" "$VOL_PKGS" "$OPT_PKGS"; do
         if sudo pacman -S --needed --noconfirm $group; then
             log SUCCESS "Installed package group: $(echo $group | cut -d' ' -f1-2)..."
         else
@@ -115,7 +116,7 @@ install_aur_packages
 
 # services
 log RUN "Enabling services..."
-for service in ananicy-cpp bluetooth NetworkManager tlp; do
+for service in ananicy-cpp bluetooth NetworkManager tlp ufw; do
     if systemctl list-unit-files | grep -q "^${service}.service"; then
         if sudo systemctl enable --now "$service"; then
             log SUCCESS "Service ${service} enabled and started."
@@ -126,6 +127,16 @@ for service in ananicy-cpp bluetooth NetworkManager tlp; do
         log WARN "Service ${service} not found. Package might not be installed."
     fi
 done
+
+# firewall
+if command -v ufw &> /dev/null; then
+    log INFO "Configuring UFW firewall..."
+    sudo ufw default deny incoming
+    sudo ufw default allow outgoing
+    sudo ufw allow ssh
+    sudo ufw --force enable
+    log SUCCESS "UFW firewall configured and enabled."
+fi
 
 # power & input
 log INFO "Configuring power & input..."
