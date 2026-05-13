@@ -58,3 +58,4 @@ git-protocol() {
     echo "Usage: git-protocol [ssh|https]"
   fi
 }
+[ -s "/home/@USERNAME@/.jabba/jabba.sh" ] && source "/home/@USERNAME@/.jabba/jabba.sh"

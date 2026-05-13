@@ -42,16 +42,16 @@
   <property name="plugins" type="empty">
     <property name="plugin-1" type="string" value="whiskermenu">
       <property name="recent" type="array">
-        <value type="string" value="xfce-keyboard-settings.desktop"/>
-        <value type="string" value="panel-preferences.desktop"/>
-        <value type="string" value="curseforge.desktop"/>
-        <value type="string" value="org.pulseaudio.pavucontrol.desktop"/>
-        <value type="string" value="brave-browser.desktop"/>
-        <value type="string" value="nvim.desktop"/>
-        <value type="string" value="xfce4-dict.desktop"/>
         <value type="string" value="vesktop.desktop"/>
+        <value type="string" value="brave-browser.desktop"/>
         <value type="string" value="steam.desktop"/>
         <value type="string" value="btop.desktop"/>
+        <value type="string" value="xfce4-taskmanager.desktop"/>
+        <value type="string" value="curseforge.desktop"/>
+        <value type="string" value="xfce-keyboard-settings.desktop"/>
+        <value type="string" value="panel-preferences.desktop"/>
+        <value type="string" value="org.pulseaudio.pavucontrol.desktop"/>
+        <value type="string" value="nvim.desktop"/>
       </property>
       <property name="favorites" type="array">
         <value type="string" value="xfce4-web-browser.desktop"/>
