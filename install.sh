@@ -57,8 +57,8 @@ log INFO "Initializing deployment for user: ${NEW_USER}"
 
 # deps
 log INFO "Checking dependencies..."
-PKGS="xfce4 xfce4-goodies xfce4-whiskermenu-plugin pavucontrol zsh git noto-fonts noto-fonts-cjk noto-fonts-emoji ttf-dejavu ttf-liberation ttf-freefont pipewire pipewire-alsa pipewire-pulse wireplumber kitty fastfetch vulkan-icd-loader lib32-vulkan-icd-loader linux-headers ananicy-cpp viewnior mpv yt-dlp bluez bluez-utils blueman networkmanager network-manager-applet tlp xfce4-power-manager neovim xfce4-volumed-pulse ufw"
-AUR_PKGS="ttf-bigblue-terminal cachyos-ananicy-rules"
+PKGS="xfce4 xfce4-goodies xfce4-whiskermenu-plugin pavucontrol zsh git noto-fonts noto-fonts-cjk noto-fonts-emoji ttf-dejavu ttf-liberation ttf-freefont pipewire pipewire-alsa pipewire-pulse wireplumber fastfetch linux-headers viewnior mpv yt-dlp bluez bluez-utils blueman networkmanager network-manager-applet tlp xfce4-power-manager neovim xfce4-volumed-pulse ufw"
+AUR_PKGS="ttf-bigblue-terminal"
 
 install_packages() {
     log INFO "Synchronizing package databases..."
@@ -69,10 +69,10 @@ install_packages() {
     local CORE_PKGS="xfce4 xfce4-goodies xfce4-whiskermenu-plugin pavucontrol zsh git"
     local FONT_PKGS="noto-fonts noto-fonts-cjk noto-fonts-emoji ttf-dejavu ttf-liberation ttf-freefont"
     local AUDIO_PKGS="pipewire pipewire-alsa pipewire-pulse wireplumber xfce4-volumed-pulse"
-    local UTIL_PKGS="kitty fastfetch viewnior mpv yt-dlp neovim"
+    local UTIL_PKGS="fastfetch viewnior mpv yt-dlp neovim"
     local NET_BT_PKGS="bluez bluez-utils blueman networkmanager network-manager-applet"
     local VOL_PKGS="gvfs gvfs-mtp gvfs-afc udisks2 ntfs-3g dosfstools exfatprogs libmtp"
-    local OPT_PKGS="vulkan-icd-loader lib32-vulkan-icd-loader linux-headers ananicy-cpp tlp xfce4-power-manager ufw"
+    local OPT_PKGS="linux-headers tlp xfce4-power-manager ufw"
 
     for group in "$CORE_PKGS" "$FONT_PKGS" "$AUDIO_PKGS" "$UTIL_PKGS" "$NET_BT_PKGS" "$VOL_PKGS" "$OPT_PKGS"; do
         if sudo pacman -S --needed --noconfirm $group; then
@@ -122,7 +122,7 @@ log SUCCESS "User added to storage and wheel groups."
 
 # services
 log RUN "Enabling services..."
-for service in ananicy-cpp bluetooth NetworkManager tlp ufw udisks2; do
+for service in bluetooth NetworkManager tlp ufw udisks2; do
     if systemctl list-unit-files | grep -q "^${service}.service"; then
         if sudo systemctl enable --now "$service"; then
             log SUCCESS "Service ${service} enabled and started."
@@ -150,14 +150,13 @@ xfconf-query -c pointers -p /$(xfconf-query -c pointers -l | grep -i touchpad | 
 
 # dirs
 log INFO "Preparing directories..."
-mkdir -p ~/.config/xfce4/xfconf/xfce-perchannel-xml/ ~/.config/xfce4/panel/ ~/.config/fastfetch/ ~/.config/kitty/ ~/.themes/ ~/.local/share/icons/ ~/.local/share/fonts/ ~/Pictures/Wallpapers/ ~/.config/autostart/
+mkdir -p ~/.config/xfce4/xfconf/xfce-perchannel-xml/ ~/.config/xfce4/panel/ ~/.config/fastfetch/ ~/.themes/ ~/.local/share/icons/ ~/.local/share/fonts/ ~/Pictures/Wallpapers/ ~/.config/autostart/
 
 # assets
 log INFO "Deploying assets..."
 cp -v "$SCRIPT_DIR"/xfconf/*.xml ~/.config/xfce4/xfconf/xfce-perchannel-xml/
 cp -rv "$SCRIPT_DIR"/panel/* ~/.config/xfce4/panel/
 cp -v "$SCRIPT_DIR"/fastfetch/config.jsonc ~/.config/fastfetch/
-[ -f "$SCRIPT_DIR"/kitty/kitty.conf ] && cp -v "$SCRIPT_DIR"/kitty/kitty.conf ~/.config/kitty/
 mkdir -p ~/.config/nvim
 cp -rv "$SCRIPT_DIR"/nvim/* ~/.config/nvim/
 cp -rv "$SCRIPT_DIR"/themes/* ~/.themes/
@@ -192,14 +191,7 @@ if [ -d "$SCRIPT_DIR"/etc/polkit-1/rules.d ]; then
     sudo cp -v "$SCRIPT_DIR"/etc/polkit-1/rules.d/*.rules /etc/polkit-1/rules.d/ && log SUCCESS "Polkit security rules deployed."
 fi
 
-# gpu
-if lspci | grep -qi "NVIDIA"; then
-    log SUCCESS "NVIDIA GPU detected."
-    if [ -f "$SCRIPT_DIR"/etc/systemd/system/nvidia-persistence.service ]; then
-        sudo cp -v "$SCRIPT_DIR"/etc/systemd/system/nvidia-persistence.service /etc/systemd/system/
-        sudo systemctl enable --now nvidia-persistence.service && log SUCCESS "NVIDIA persistence mode enabled."
-    fi
-fi
+# gpu removed
 
 log RUN "Triggering system changes..."
 sudo sysctl --system > /dev/null
@@ -239,16 +231,11 @@ xfconf-query -c xsettings -p /Net/IconThemeName -s "SE98"
 xfconf-query -c xfwm4 -p /general/theme -s "custom_WM"
 
 # Set default terminal
-xfconf-query -c xfce4-mime-helper -p /TerminalEmulator -n -t string -s "kitty" || log WARN "Failed to set default terminal."
+xfconf-query -c xfce4-mime-helper -p /TerminalEmulator -n -t string -s "xfce4-terminal" || log WARN "Failed to set default terminal."
 
 # terminal
 log INFO "Terminal config..."
-mkdir -p ~/.config/kitty
-cat > ~/.config/kitty/kitty.conf <<KCF
-font_family      BigBlueTerm437 Nerd Font Mono
-font_size        12.0
-background_opacity 0.9
-KCF
+# kitty removed
 
 # mimes
 log INFO "Mime defaults..."
